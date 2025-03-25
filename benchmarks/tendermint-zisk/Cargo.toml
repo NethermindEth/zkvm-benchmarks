@@ -1,0 +1,18 @@
+[workspace]
+[package]
+version = "0.1.0"
+name = "tendermint-zisk"
+edition = "2021"
+
+[dependencies]
+ziskos = { git = "https://github.com/0xPolygonHermez/zisk.git", tag = "v0.5.0" }
+
+serde = { version = "1.0.204", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+tendermint = { version = "=0.40.1", default-features = false }
+tendermint-light-client-verifier = { version = "=0.40.1", default-features = false, features = [
+    "rust-crypto",
+] }
+
+[features]
+zisk = []

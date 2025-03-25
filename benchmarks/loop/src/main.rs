@@ -29,6 +29,9 @@ valida_rs::entrypoint!(main);
 #[cfg(target_os = "zkvm")]
 use core::arch::asm;
 
+#[cfg(feature = "zisk")]
+ziskos::entrypoint!(main);
+
 #[cfg_attr(feature = "nexus", nexus_rt::main)]
 fn main() {
     let iterations = 3000 * 1024;

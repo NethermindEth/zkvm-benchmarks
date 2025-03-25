@@ -4,6 +4,7 @@ mod risc0;
 mod sp1;
 mod types;
 mod utils;
+mod zisk;
 
 use std::{
     fs::{create_dir_all, OpenOptions},
@@ -20,6 +21,7 @@ use types::{ProgramId, ProverId};
 
 use risc0::Risc0Evaluator;
 use sp1::SP1Evaluator;
+use zisk::ZiskEvaluator;
 
 #[derive(Parser, Clone)]
 #[command(about = "Evaluate the performance of a zkVM on a program.")]
@@ -106,6 +108,7 @@ fn main() -> Result<()> {
         ProverId::SP1 => SP1Evaluator::eval(&args),
         ProverId::Jolt => JoltEvaluator::eval(&args),
         ProverId::Nexus => NexusEvaluator::eval(&args),
+        ProverId::Zisk => ZiskEvaluator::eval(&args),
     };
 
     // Create the results directory if it doesn't exist.
