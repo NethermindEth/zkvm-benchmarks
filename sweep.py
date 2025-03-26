@@ -91,7 +91,7 @@ def main():
         nargs="+",
         default=["sp1"],
         help="List of provers to use",
-        choices=["sp1", "risc0", "lita", "jolt", "nexus"],
+        choices=["sp1", "risc0", "lita", "jolt", "nexus", "zisk"],
     )
     parser.add_argument(
         "--shard-sizes",

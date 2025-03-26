@@ -94,6 +94,11 @@ if [ "$2" == "nexus" ]; then
     cargo build --release --ignore-rust-version --features $2
 fi
 
+if [ "$2" == "zisk" ]; then
+  echo "Building Zisk"
+  cargo-zisk build --release --features $2
+fi
+
 cd ../../
 
 echo "Running eval script"

@@ -43,15 +43,15 @@ pub fn main() {
     #[cfg(feature = "nexus")]
     let input = nexus_rt::read_private_input::<u32>().unwrap();
 
-    #[cfg(feature = "ziskos")]
+    #[cfg(feature = "zisk")]
     let input = zisk_input();
 
     let result = black_box(fibonacci(black_box(input)));
     println!("result {}", result);
 }
 
-#[cfg(feature = "ziskos")]
+#[cfg(feature = "zisk")]
 fn zisk_input() -> u32 {
     let input: Vec<u8> = ziskos::read_input();
-    u32::from_le_bytes(input.try_into().unwrap());
+    u32::from_le_bytes(input.try_into().unwrap())
 }
