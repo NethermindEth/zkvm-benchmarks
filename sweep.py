@@ -84,7 +84,7 @@ def main():
         nargs="+",
         default=["loop", "fibonacci", "tendermint", "reth16", "reth30"],
         help="List of programs to benchmark",
-        choices=["loop", "fibonacci", "tendermint", "reth", "reth16", "reth30"],
+        choices=["loop", "fibonacci", "tendermint", "reth", "reth1", "reth16", "reth30"],
     )
     parser.add_argument(
         "--provers",
@@ -127,6 +127,8 @@ def main():
         blocks = args.blocks
 
     # Append block numbers if respective flags are enabled
+    if "reth1" in args.programs:
+        blocks.append("22014900")
     if "reth16" in args.programs:
         blocks.append("17106222")
     if "reth30" in args.programs:

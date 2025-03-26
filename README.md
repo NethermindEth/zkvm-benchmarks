@@ -58,9 +58,13 @@ rustup target add riscv32i-unknown-none-elf
 cargo install --git https://github.com/nexus-xyz/nexus-zkvm cargo-nexus --tag 'v0.2.4'
 ```
 
-7. Install [Docker](https://docs.docker.com/engine/install/ubuntu/).
+7. Install the [ZisK toolchain](https://0xpolygonhermez.github.io/zisk/getting_started/installation.html):
 
-8. If using NVIDIA GPUs, install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+```sh
+curl https://raw.githubusercontent.com/0xPolygonHermez/zisk/main/ziskup/install.sh | bash
+```
+
+8. Install [Docker](https://docs.docker.com/engine/install/ubuntu/).
 
 **Note:** Run one round of a small program (e.g., Fibonacci) to download the R0 docker image before benchmarking to avoid affecting benchmark times.
 
@@ -69,6 +73,10 @@ cargo install --git https://github.com/nexus-xyz/nexus-zkvm cargo-nexus --tag 'v
 **Note:** For jolt you need to install `pkg-config` and `libssl-dev` (i.e. `apt
 install pkg-config libssl-dev`)
 
+**Note:** For ZisK you need to install additional packages on Ubuntu 22.04 or higher:
+```sh
+sudo apt-get install -y xz-utils jq curl build-essential qemu-system libomp-dev libgmp-dev nlohmann-json3-dev protobuf-compiler uuid-dev libgrpc++-dev libsecp256k1-dev libsodium-dev libpqxx-dev nasm libopenmpi-dev openmpi-bin openmpi-common
+```
 
 ## Running Benchmarks
 
@@ -82,12 +90,11 @@ Available options:
 
 - `--filename`: Filename for the benchmark (default: "benchmark")
 - `--trials`: Number of trials to run (default: 1)
-- `--programs`: List of programs to benchmark (choices: loop, fibonacci, tendermint, reth1, reth2.)
-- `--provers`: List of provers to use (choices: sp1, risc0)
-- `--shard-sizes`: List of shard sizes to use
-- `--block-1`: Block number for reth1 (default: "17106222")
-- `--block-2`: Block number for reth2 (default: "19409768")
-- `--fibonacci`: Inputs for the fibonacci benchmark. (default: 100 1000 10000 300000)
+- `--programs`: List of programs to benchmark (choices: loop, fibonacci, tendermint, reth, reth1, reth16, reth30)
+- `--provers`: List of provers to use (choices: sp1, risc0, lita, jolt, nexus, zisk)
+- `--shard-sizes`: List of shard sizes to use (default: [21])
+- `--blocks`: List of block numbers for reth tests (default: ["22014900"] for reth1, ["17106222"] for reth16, ["19409768"] for reth30)
+- `--fibonacci`: Inputs for the fibonacci benchmark (default: [100, 1000, 10000, 300000])
 
 To run a single benchmark:
 

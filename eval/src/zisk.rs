@@ -67,7 +67,7 @@ impl ZiskEvaluator {
         PerformanceReport {
             program,
             prover: args.prover.to_string(),
-            shard_size: args.shard_size,
+            shard_size: 0,
             shards: 0,
             cycles: 0,
             speed: 0.0,

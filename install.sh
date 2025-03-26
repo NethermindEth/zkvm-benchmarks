@@ -43,4 +43,7 @@ rustup target add riscv32i-unknown-none-elf
 cargo install --git https://github.com/nexus-xyz/nexus-zkvm cargo-nexus --tag 'v0.2.4' || error_exit "Installing nexus toolchain"
 cargo nexus --help || error_exit "Checking cargo nexus version"
 
+# Install ZisK toolchain
+curl https://raw.githubusercontent.com/0xPolygonHermez/zisk/main/ziskup/install.sh | bash || error_exit "Installing ZisK toolchain"
+
 echo "All installations completed successfully."
