@@ -60,6 +60,9 @@ impl ZiskEvaluator {
 
         let (_status, prove_duration) = time_operation(|| {
             prove
+                .arg("-o")
+                .arg("proof")
+                .arg("-a")
                 .status()
                 .expect("Failed to execute cargo-zisk command")
         });
