@@ -10475,6 +10475,7 @@ dependencies = [
  "jolt-sdk",
  "loop-jolt",
  "nexus-sdk",
+ "risc0-binfmt",
  "risc0-zkvm",
  "rsp-client-executor",
  "serde",

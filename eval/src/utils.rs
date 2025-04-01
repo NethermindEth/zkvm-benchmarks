@@ -62,3 +62,24 @@ pub fn time_operation<T, F: FnOnce() -> T>(operation: F) -> (T, Duration) {
     let duration = start.elapsed();
     (result, duration)
 }
+
+#[cfg(feature = "risc0")]
+pub mod risc0v2 {
+    use super::*;
+    use std::{path::PathBuf, str::FromStr};
+
+    use risc0_binfmt::ProgramBinary;
+
+    const V1COMPAT_KERNEL_ELF: &[u8] = include_bytes!("../v1compat.elf");
+
+    pub fn generate_risc0_v2_elf(args: &EvalArgs) -> String {
+        let elf_path = get_elf(args);
+        let user_elf = fs::read(&elf_path).unwrap();
+        let binary = ProgramBinary::new(&user_elf, V1COMPAT_KERNEL_ELF);
+        let elf = binary.encode();
+        let combined_path = PathBuf::from_str(&(elf_path + ".bin")).unwrap();
+
+        fs::write(&combined_path, &elf).unwrap();
+        combined_path.to_str().unwrap().to_string()
+    }
+}

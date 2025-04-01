@@ -9,7 +9,7 @@ use risc0_zkvm::{
 #[cfg(feature = "risc0")]
 use crate::{
     types::ProgramId,
-    utils::{get_elf, get_reth_input, time_operation},
+    utils::{get_reth_input, risc0v2::generate_risc0_v2_elf, time_operation},
 };
 
 use crate::{EvalArgs, PerformanceReport};
@@ -37,7 +37,7 @@ impl Risc0Evaluator {
             _ => args.program.to_string(),
         };
 
-        let elf_path = get_elf(args);
+        let elf_path = generate_risc0_v2_elf(args);
         let elf = fs::read(&elf_path).unwrap();
         let image_id = compute_image_id(elf.as_slice()).unwrap();
 

@@ -50,8 +50,8 @@ if [ "$2" == "risc0" ]; then
     echo "Building Risc0"
     # Use the risc0 toolchain.
     ATOMIC_PARAM=$(check_rust_version "risc0")
-    CC=gcc CC_riscv32im_risc0_zkvm_elf=~/.risc0/cpp/bin/riscv32-unknown-elf-gcc\
-      RUSTFLAGS="-C passes=$ATOMIC_PARAM -C link-arg=-Ttext=0x0000200800 -C panic=abort"\
+    CC_riscv32im_risc0_zkvm_elf=~/.risc0/cpp/bin/riscv32-unknown-elf-gcc \
+      RUSTFLAGS="-C passes=$ATOMIC_PARAM -C link-arg=-Ttext=0x00200800 -C link-arg=--fatal-warnings -C panic=abort"\
       RISC0_FEATURE_bigint2=1\
       RUSTUP_TOOLCHAIN=risc0 \
       CARGO_BUILD_TARGET=riscv32im-risc0-zkvm-elf \
