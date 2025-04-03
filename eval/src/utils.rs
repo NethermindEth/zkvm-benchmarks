@@ -73,13 +73,16 @@ pub mod risc0v2 {
     const V1COMPAT_KERNEL_ELF: &[u8] = include_bytes!("../v1compat.elf");
 
     pub fn generate_risc0_v2_elf(args: &EvalArgs) -> String {
-        let elf_path = get_elf(args);
-        let user_elf = fs::read(&elf_path).unwrap();
-        let binary = ProgramBinary::new(&user_elf, V1COMPAT_KERNEL_ELF);
-        let elf = binary.encode();
-        let combined_path = PathBuf::from_str(&(elf_path + ".bin")).unwrap();
+        let elf_path = PathBuf::from(get_elf(args));
+        let combined_path = elf_path.with_extension("bin");
 
-        fs::write(&combined_path, &elf).unwrap();
+        if !combined_path.exists() {
+            let user_elf = fs::read(&elf_path).unwrap();
+            let binary = ProgramBinary::new(&user_elf, V1COMPAT_KERNEL_ELF);
+            let elf = binary.encode();
+            fs::write(&combined_path, &elf).unwrap();
+        }
+
         combined_path.to_str().unwrap().to_string()
     }
 }
