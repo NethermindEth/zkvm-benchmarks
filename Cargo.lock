@@ -10468,6 +10468,7 @@ name = "zkvm-benchmarks-eval"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "bonsai-sdk",
  "clap",
  "csv",
  "eyre",

@@ -8,6 +8,7 @@ pub enum ProverId {
     Jolt,
     Nexus,
     Zisk,
+    Bento,
 }
 
 impl ProverId {
@@ -19,6 +20,7 @@ impl ProverId {
             ProverId::Jolt => "jolt".to_string(),
             ProverId::Nexus => "nexus".to_string(),
             ProverId::Zisk => "zisk".to_string(),
+            ProverId::Bento => "bento".to_string(),
         }
     }
 }

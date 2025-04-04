@@ -66,7 +66,7 @@ pub fn time_operation<T, F: FnOnce() -> T>(operation: F) -> (T, Duration) {
 #[cfg(feature = "risc0")]
 pub mod risc0v2 {
     use super::*;
-    use std::{path::PathBuf, str::FromStr};
+    use std::path::PathBuf;
 
     use risc0_binfmt::ProgramBinary;
 

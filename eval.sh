@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "Running $1, $2, $3, $4, $5"
+echo "Running $@"
 
 # Function to check rust version and determine correct parameter name
 check_rust_version() {
@@ -45,8 +45,8 @@ echo "Building program"
 # cd to program directory computed above
 cd "benchmarks/$program_directory"
 
-# If the prover is risc0, then build the program.
-if [ "$2" == "risc0" ]; then
+# If the prover is risc0 or bento, then build the program.
+if [ "$2" == "risc0" ] || [ "$2" == "bento" ]; then
     echo "Building Risc0"
     # Use the risc0 toolchain.
     ATOMIC_PARAM=$(check_rust_version "risc0")
@@ -57,9 +57,8 @@ if [ "$2" == "risc0" ]; then
       CARGO_BUILD_TARGET=riscv32im-risc0-zkvm-elf \
       cargo build --release --features $2
 
-fi
 # If the prover is sp1, then build the program.
-if [ "$2" == "sp1" ]; then
+elif [ "$2" == "sp1" ]; then
     # The reason we don't just use `cargo prove build` from the SP1 CLI is we need to pass a --features ...
     # flag to select between sp1 and risc0.
     ATOMIC_PARAM=$(check_rust_version "succinct")
@@ -67,9 +66,7 @@ if [ "$2" == "sp1" ]; then
         RUSTUP_TOOLCHAIN=succinct \
         CARGO_BUILD_TARGET=riscv32im-succinct-zkvm-elf \
         cargo build --release --ignore-rust-version --features $2
-fi
-
-if [ "$2" == "lita" ]; then
+elif [ "$2" == "lita" ]; then
   echo "Building Lita"
   # Use the lita toolchain.
   CC_valida_unknown_baremetal_gnu="/valida-toolchain/bin/clang" \
@@ -81,20 +78,16 @@ if [ "$2" == "lita" ]; then
   # Lita does not have any hardware acceleration. Also it does not have an SDK
   # or a crate to be used on rust. We need to benchmark it without rust
   cd ../../
-  ./eval_lita.sh $1 $2 $3 $program_directory $6
+  ./eval_lita.sh "$1" "$2" "$3" "$program_directory" "$5" # Pass potential extra arg $5
   exit
-fi
-
-if [ "$2" == "nexus" ]; then
+elif [ "$2" == "nexus" ]; then
   echo "Building Nexus"
   # Hardcode the memlimit to 8 MB
   RUSTFLAGS="-C link-arg=--defsym=MEMORY_LIMIT=0x80000 -C link-arg=-T../../nova.x" \
     CARGO_BUILD_TARGET=riscv32i-unknown-none-elf \
     RUSTUP_TOOLCHAIN=1.77.0 \
     cargo build --release --ignore-rust-version --features $2
-fi
-
-if [ "$2" == "zisk" ]; then
+elif [ "$2" == "zisk" ]; then
   echo "Building Zisk"
   cargo-zisk build --release --features $2
 fi
@@ -131,6 +124,34 @@ if [ "$2" = "jolt" ]; then
   export RUSTUP_TOOLCHAIN="nightly-2024-09-30"
 fi
 
+# Prepare optional arguments for cargo run
+cargo_run_opts=()
+BENTO_URL_VALUE=""
+
+# Determine Bento URL value if applicable
+if [ "$2" = "bento" ]; then
+  if [ "$#" -eq 6 ]; then # Case: extra_arg exists, bento_url is $6
+    BENTO_URL_VALUE="$6"
+  elif [ "$#" -eq 5 ]; then # Case: extra_arg is None, bento_url is $5
+    BENTO_URL_VALUE="$5"
+  fi
+  if [ -z "$BENTO_URL_VALUE" ]; then
+     echo "Error: Bento prover provided but URL parameter is missing or empty."
+     exit 1
+  fi
+  cargo_run_opts+=(--bento-url "$BENTO_URL_VALUE")
+fi
+
+# Determine extra_arg parameter if applicable
+# Check if $5 exists and is not the bento_url (which happens when $#=5 and prover=bento)
+if [ "$#" -ge 5 ] && ! ([ "$#" -eq 5 ] && [ "$2" = "bento" ]); then
+  EXTRA_ARG_VALUE="$5"
+  if [ "$1" == "fibonacci" ]; then
+    cargo_run_opts+=(--fibonacci-input "$EXTRA_ARG_VALUE")
+  elif [ "$1" == "reth" ]; then
+    cargo_run_opts+=(--block-number "$EXTRA_ARG_VALUE")
+  fi
+fi
 
 # Run the benchmark.
 RISC0_INFO=1 \
@@ -144,11 +165,7 @@ RISC0_INFO=1 \
     --prover "$2" \
     --shard-size "$3" \
     --filename "$4" \
-     ${5:+$([[ "$1" == "fibonacci" ]] && echo "--fibonacci-input" || echo "--block-number") $5}
-    # --hashfn "$3" \
-    # --shard-size "$4" \
-    # --filename "$5" \
-    #  ${6:+$([[ "$1" == "fibonacci" ]] && echo "--fibonacci-input" || echo "--block-number") $6}
+    "${cargo_run_opts[@]}" # Pass optional args safely
 
 # Revert Cargo.toml as the last step
 if [ "$2" = "jolt" ]; then

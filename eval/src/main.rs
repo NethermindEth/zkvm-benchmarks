@@ -1,3 +1,4 @@
+mod bento;
 mod jolt;
 mod nexus;
 mod risc0;
@@ -11,6 +12,7 @@ use std::{
     path::PathBuf,
 };
 
+use bento::BentoEvaluator;
 use clap::Parser;
 use csv::WriterBuilder;
 use eyre::Result;
@@ -40,6 +42,8 @@ pub struct EvalArgs {
     block_number: Option<u64>,
     #[arg(long)]
     fibonacci_input: Option<u32>,
+    #[arg(long)]
+    bento_url: Option<String>,
 }
 
 /// The performance report of a zkVM on a program.
@@ -109,6 +113,7 @@ fn main() -> Result<()> {
         ProverId::Jolt => JoltEvaluator::eval(&args),
         ProverId::Nexus => NexusEvaluator::eval(&args),
         ProverId::Zisk => ZiskEvaluator::eval(&args),
+        ProverId::Bento => BentoEvaluator::eval(&args),
     };
 
     // Create the results directory if it doesn't exist.

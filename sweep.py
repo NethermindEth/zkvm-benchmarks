@@ -3,7 +3,7 @@ from itertools import product
 import subprocess
 
 
-def build_eval_command(program, prover, shard_size, filename, extra_arg=None):
+def build_eval_command(program, prover, shard_size, filename, extra_arg=None, bento_url=None):
     """Helper function to build the eval.sh command with consistent format"""
     # Determine the actual program name to pass to eval.sh
     actual_program = "reth" if program.startswith("reth") else program
@@ -22,6 +22,10 @@ def build_eval_command(program, prover, shard_size, filename, extra_arg=None):
     if extra_arg is not None:
         cmd.append(str(extra_arg))
 
+    # Add bento_url if provided and prover is bento
+    if prover == "bento":
+        cmd.append(str(bento_url))
+
     return cmd
 
 
@@ -33,6 +37,7 @@ def run_benchmark(
     shard_sizes,
     blocks,
     fibonacci_inputs,
+    bento_url,
 ):
     option_combinations = product(programs, provers, shard_sizes)
     for program, prover, shard_size in option_combinations:
@@ -51,7 +56,7 @@ def run_benchmark(
                 print(f"  With fibonacci input {fib_input}")
                 for _ in range(trials):
                     cmd = build_eval_command(
-                        program, prover, shard_size, filename, fib_input
+                        program, prover, shard_size, filename, fib_input, bento_url
                     )
                     subprocess.run(cmd)
 
@@ -60,14 +65,14 @@ def run_benchmark(
                 print(f"  With block {block}")
                 for _ in range(trials):
                     cmd = build_eval_command(
-                        program, prover, shard_size, filename, block
+                        program, prover, shard_size, filename, block, bento_url
                     )
                     subprocess.run(cmd)
 
         else:
             # Other programs without extra args
             for _ in range(trials):
-                cmd = build_eval_command(program, prover, shard_size, filename)
+                cmd = build_eval_command(program, prover, shard_size, filename, None, bento_url)
                 subprocess.run(cmd)
 
 
@@ -91,7 +96,7 @@ def main():
         nargs="+",
         default=["sp1"],
         help="List of provers to use",
-        choices=["sp1", "risc0", "lita", "jolt", "nexus", "zisk"],
+        choices=["sp1", "risc0", "lita", "jolt", "nexus", "zisk", "bento"],
     )
     parser.add_argument(
         "--shard-sizes",
@@ -114,6 +119,12 @@ def main():
         type=int,
         default=[100, 1000, 10000, 300000],
         help="Input values for fibonacci benchmarks",
+    )
+
+    parser.add_argument(
+        "--bento-url",
+        help="URL for Bento prover",
+        default="http://localhost:8081",
     )
 
     args = parser.parse_args()
@@ -149,6 +160,7 @@ def main():
         args.shard_sizes,
         blocks,
         args.fibonacci,
+        args.bento_url,
     )
 
 
