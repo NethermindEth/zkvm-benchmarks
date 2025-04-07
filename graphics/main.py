@@ -41,7 +41,8 @@ def _plot_metric_on_ax(ax, df, y_column, y_label, title, use_log_scale):
         x="program",
         y=y_column,
         hue="prover",
-        ax=ax
+        ax=ax,
+        edgecolor='black'
     )
 
     # Determine formatting for value labels
@@ -58,19 +59,20 @@ def _plot_metric_on_ax(ax, df, y_column, y_label, title, use_log_scale):
 
     add_value_labels(ax, fmt=fmt, conversion_factor=conversion, unit_suffix=suffix)
 
-    ax.set_xlabel("Program")
+    # ax.set_xlabel("Program") # Commented out as requested
     y_axis_label = f"{y_label}{unit}"
     if use_log_scale:
         y_axis_label += " (Log Scale)"
-    ax.set_ylabel(y_axis_label)
-    ax.set_title(title)
+    ax.set_ylabel(y_axis_label, fontsize=12)
+    ax.set_title(title, fontsize=14)
     ax.tick_params(axis='x', rotation=45)
+    # ax.set_xticklabels([]) # Re-enabled x-axis tick labels
 
     if use_log_scale:
         ax.set_yscale('log')
     
     # Adjust legend position slightly if needed (can be customized)
-    ax.legend(loc='upper right', fontsize='small')
+    ax.legend(loc='upper right', fontsize=10)
 
 def create_grouped_bar_chart(df, y_column, y_label, title_metric, filename, use_log_scale=False):
     """Create a single grouped bar chart and save it to a file."""
@@ -92,7 +94,7 @@ def create_grouped_bar_chart(df, y_column, y_label, title_metric, filename, use_
 def create_combined_duration_plot(df, filename):
     """Creates a 2x2 grid of duration plots and saves to a single file."""
     fig, axes = plt.subplots(2, 2, figsize=(18, 12), sharey=False) # Adjust figsize, sharey=False if scales differ
-    fig.suptitle("Benchmark Durations for RETH Programs", fontsize=16)
+    fig.suptitle("Benchmark Durations for RETH Programs", fontsize=18)
     
     metrics_to_plot = [
         {"ax": axes[0, 0], "y_column": "core_prove_duration", "title": "Core Proof"},
@@ -106,7 +108,7 @@ def create_combined_duration_plot(df, filename):
             ax=plot_info["ax"],
             df=df,
             y_column=plot_info["y_column"],
-            y_label="Minutes",
+            y_label="Seconds",
             title=plot_info["title"],
             use_log_scale=False # Linear scale for durations
         )
@@ -122,7 +124,7 @@ def create_combined_duration_plot(df, filename):
     plt.close(fig)
 
 def main():
-    sns.set_theme(style="whitegrid")
+    sns.set_theme(style="whitegrid", palette="pastel")
 
     try:
         df_raw = pl.read_csv(
