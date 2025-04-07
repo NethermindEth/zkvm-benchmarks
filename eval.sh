@@ -35,7 +35,11 @@ fi
 # Get program directory name as $1 and append "-$2" to it if $1 is "tendermint"
 # or "reth"
 if [ "$1" = "tendermint" ] || [ "$1" = "reth" ]; then
-    program_directory="${1}-$2"
+    if [ "$2" = "bento" ]; then
+        program_directory="${1}-risc0" # Use risc0 directory for bento
+    else
+        program_directory="${1}-$2"
+    fi
 else
     program_directory="$1"
 fi

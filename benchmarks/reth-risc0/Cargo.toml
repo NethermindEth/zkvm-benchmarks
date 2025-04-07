@@ -25,3 +25,4 @@ substrate-bn = { git = "https://github.com/risc0/paritytech-bn", branch = "relea
 
 [features]
 risc0 = []
+bento = []

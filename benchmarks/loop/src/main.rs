@@ -17,7 +17,7 @@
 #![no_main]
 #![cfg_attr(feature = "nexus", no_std)]
 
-#[cfg(feature = "risc0")]
+#[cfg(any(feature = "risc0", feature = "bento"))]
 risc0_zkvm::guest::entry!(main);
 
 #[cfg(feature = "sp1")]

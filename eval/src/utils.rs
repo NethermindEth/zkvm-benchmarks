@@ -12,14 +12,18 @@ pub fn get_elf(args: &EvalArgs) -> String {
     let mut program_dir = args.program.to_string();
     if args.program == ProgramId::Tendermint || args.program == ProgramId::Reth {
         program_dir += "-";
-        program_dir += args.prover.to_string().as_str();
+        if args.prover == ProverId::Bento {
+            program_dir += "risc0";
+        } else {
+            program_dir += args.prover.to_string().as_str();
+        }
     }
 
     let current_dir = env::current_dir().expect("Failed to get current working directory");
 
     let target_name = match args.prover {
         ProverId::SP1 => "riscv32im-succinct-zkvm-elf",
-        ProverId::Risc0 => "riscv32im-risc0-zkvm-elf",
+        ProverId::Risc0 | ProverId::Bento => "riscv32im-risc0-zkvm-elf",
         ProverId::Nexus => "riscv32i-unknown-none-elf",
         ProverId::Zisk => "riscv64ima-polygon-ziskos-elf",
         _ => panic!("prover not supported"),
@@ -63,7 +67,7 @@ pub fn time_operation<T, F: FnOnce() -> T>(operation: F) -> (T, Duration) {
     (result, duration)
 }
 
-#[cfg(feature = "risc0")]
+#[cfg(any(feature = "risc0", feature = "bento"))]
 pub mod risc0v2 {
     use super::*;
     use std::path::PathBuf;

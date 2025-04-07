@@ -3,7 +3,7 @@
 
 use core::hint::black_box;
 
-#[cfg(feature = "risc0")]
+#[cfg(any(feature = "risc0", feature = "bento"))]
 risc0_zkvm::guest::entry!(main);
 
 #[cfg(feature = "sp1")]
@@ -31,7 +31,7 @@ fn fibonacci(n: u32) -> u32 {
 
 #[cfg_attr(feature = "nexus", nexus_rt::main)]
 pub fn main() {
-    #[cfg(feature = "risc0")]
+    #[cfg(any(feature = "risc0", feature = "bento"))]
     let input: u32 = risc0_zkvm::guest::env::read();
 
     #[cfg(feature = "sp1")]
