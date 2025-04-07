@@ -1,5 +1,8 @@
 #[cfg(feature = "bento")]
-use std::{fs, time::Duration};
+use std::{
+    fs,
+    time::{Duration, Instant},
+};
 
 #[cfg(feature = "bento")]
 use bonsai_sdk::blocking::Client;
@@ -13,6 +16,9 @@ use crate::{
 };
 
 use crate::{EvalArgs, PerformanceReport};
+
+#[cfg(feature = "bento")]
+const SLEEP_DURATION: Duration = Duration::from_millis(100);
 
 pub struct BentoEvaluator;
 
@@ -92,23 +98,24 @@ impl BentoEvaluator {
         client.upload_img(&image_id_str, elf).unwrap();
         let input_id = client.upload_input(input).unwrap();
 
+        tracing::info!("Asking to bento core and recursion proving");
+        let prove_duration;
+        let start = Instant::now();
         let session = client
             .create_session(image_id_str, input_id, vec![], false)
             .unwrap();
 
-        let (receipt, res) = loop {
+        let (receipt, _res) = loop {
             let res = session.status(&client).unwrap();
             match res.status.as_ref() {
                 "RUNNING" => {
-                    tracing::info!(
-                        "Current status: {} - state: {} - continue polling...",
-                        res.status,
-                        res.state.unwrap_or_default()
-                    );
-                    std::thread::sleep(Duration::from_secs(15));
+                    std::thread::sleep(SLEEP_DURATION);
                     continue;
                 }
                 "SUCCEEDED" => {
+                    let duration = start.elapsed();
+                    prove_duration = duration.as_secs_f64();
+
                     let receipt_buf = client.receipt_download(&session).unwrap();
                     let receipt: Receipt = bincode::deserialize(&receipt_buf).unwrap();
                     break (receipt, res);
@@ -122,22 +129,27 @@ impl BentoEvaluator {
         };
 
         let succinct_receipt = receipt.inner.succinct().unwrap();
-        let prove_duration = res.elapsed_time.unwrap();
         let recursive_proof_size = succinct_receipt.seal.len() * 4;
 
         // Verify the core proof.
         let ((), compress_verify_duration) = time_operation(|| receipt.verify(image_id).unwrap());
 
+        tracing::info!("Asking to bento groth16 proving");
+        let groth16_prove_duration;
+        let start = Instant::now();
         let snark_session = client.create_snark(session.uuid).unwrap();
+
         loop {
             let res = snark_session.status(&client).unwrap();
             match res.status.as_ref() {
                 "RUNNING" => {
-                    tracing::info!("Current status: {} - continue polling...", res.status);
-                    std::thread::sleep(Duration::from_secs(15));
+                    std::thread::sleep(SLEEP_DURATION);
                     continue;
                 }
                 "SUCCEEDED" => {
+                    let duration = start.elapsed();
+                    groth16_prove_duration = duration.as_secs_f64();
+
                     let receipt_buf = client.download(&res.output.unwrap()).unwrap();
                     let _receipt: Receipt = bincode::deserialize(&receipt_buf).unwrap();
                     break;
@@ -171,7 +183,7 @@ impl BentoEvaluator {
             core_khz,
             overall_khz,
             wrap_prove_duration: 0.0,
-            groth16_prove_duration: 0.0,
+            groth16_prove_duration,
             shrink_prove_duration: 0.0,
         }
     }
