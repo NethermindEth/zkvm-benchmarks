@@ -33,10 +33,17 @@ check_rust_version() {
     fi
 }
 
-# If $2 == jolt, append precompiles to Cargo.toml
-if [ "$PROVER" = "jolt" ]; then
+# If $PROVER == jolt or $PROGRAM" = raiko, append precompiles to Cargo.toml
+if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
     cp Cargo.toml Cargo.toml.bak
-    cat patches/jolt.txt >> Cargo.toml
+
+    if [ "$PROGRAM" = "raiko" ]; then
+      cp patches/raiko.txt Cargo.toml
+    fi
+
+    if [ "$PROVER" = "jolt" ]; then
+      cat patches/jolt.txt >> Cargo.toml
+    fi
 fi
 
 echo "Building program"
@@ -202,7 +209,7 @@ RISC0_INFO=1 \
     --taiko-blocks-dir-suffix "$BLOCKS_DIR_SUFFIX"
 
 # Revert Cargo.toml as the last step
-if [ "$PROVER" = "jolt" ]; then
+if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
     mv Cargo.toml.bak Cargo.toml
 fi
 
