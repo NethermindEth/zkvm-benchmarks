@@ -2,6 +2,7 @@ use std::{
     env, fs,
     time::{Duration, Instant},
 };
+use raiko_lib::input::GuestInput;
 
 use crate::{
     types::{ProgramId, ProverId},
@@ -10,7 +11,7 @@ use crate::{
 
 pub fn get_elf(args: &EvalArgs) -> String {
     let mut program_dir = args.program.to_string();
-    if args.program == ProgramId::Tendermint || args.program == ProgramId::Reth {
+    if args.program == ProgramId::Tendermint || args.program == ProgramId::Reth || args.program == ProgramId::Raiko {
         program_dir += "-";
         if args.prover == ProverId::Bento {
             program_dir += "risc0";
@@ -43,10 +44,21 @@ pub fn get_elf(args: &EvalArgs) -> String {
 }
 
 pub fn get_reth_input(args: &EvalArgs) -> Vec<u8> {
-    if let Some(block_number) = args.block_number {
-        let current_dir = env::current_dir().expect("Failed to get current working directory");
-        let blocks_dir = current_dir.join("eval").join("blocks");
-        let file_path = blocks_dir.join(format!("{}.bin", block_number));
+    let block_number = args.block_number.as_deref().expect("Block name is required for Reth program");
+    read_block("blocks", block_number, "bin")
+}
+
+pub fn get_raiko_input(args: &EvalArgs) -> GuestInput {
+    let dir_suffix = args.taiko_blocks_dir_suffix.as_deref().expect("taiko_blocks_dir_suffix not provided");
+    let block_number = args.block_number.as_deref().expect("block_number not provided");
+    let guest_input_json = String::from_utf8(read_block(&format!("blocks-taiko_{dir_suffix}"), block_number, "json")).unwrap();
+    serde_json::from_str(&guest_input_json).expect("Failed to parse guest input JSON")
+}
+
+pub fn read_block(blocks_dir_name: &str, block_number: &u64, ext: &str) -> Vec<u8> {
+    let current_dir = env::current_dir().expect("Failed to get current working directory");
+    let blocks_dir = current_dir.join("eval").join(blocks_dir_name);
+    let file_path = blocks_dir.join(format!("{}.bin", block_number));
 
         match fs::read(&file_path) {
             Ok(bytes) => bytes,
