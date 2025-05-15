@@ -39,6 +39,9 @@ if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
 
     if [ "$PROGRAM" = "raiko" ]; then
       cp patches/raiko.txt Cargo.toml
+
+      cp eval/Cargo.toml eval/Cargo.toml.bak
+      cp patches/raikoeval.txt eval/Cargo.toml
     fi
 
     if [ "$PROVER" = "jolt" ]; then
@@ -211,6 +214,10 @@ RISC0_INFO=1 \
 # Revert Cargo.toml as the last step
 if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
     mv Cargo.toml.bak Cargo.toml
+
+    if [ "$PROGRAM" = "raiko" ]; then
+      mv eval/Cargo.toml.bak eval/Cargo.toml
+    fi
 fi
 
 exit $?
