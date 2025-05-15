@@ -9,7 +9,7 @@ use risc0_zkvm::{
 #[cfg(feature = "risc0")]
 use crate::{
     types::ProgramId,
-    utils::{get_reth_input, risc0v2::generate_risc0_v2_elf, time_operation},
+    utils::{get_raiko_input, get_reth_input, risc0v2::generate_risc0_v2_elf, time_operation},
 };
 
 use crate::{EvalArgs, PerformanceReport};
@@ -24,7 +24,7 @@ impl Risc0Evaluator {
         // }
 
         let program = match args.program {
-            ProgramId::Reth => format!(
+            ProgramId::Reth | ProgramId::Raiko => format!(
                 "{}_{}",
                 args.program.to_string(),
                 args.block_number.unwrap().to_string()
@@ -59,6 +59,16 @@ impl Risc0Evaluator {
                 .expect("Failed to write input to executor")
                 .build()
                 .unwrap(),
+            ProgramId::Raiko => {
+                let input = get_raiko_input(args);
+                let encoded_input = risc0_zkvm::serde::to_vec(&input).expect("Could not serialize proving input!");
+                ExecutorEnv::builder()
+                    .session_limit(None)
+                    .segment_limit_po2(args.shard_size as u32)
+                    .write_slice(&encoded_input)
+                    .build()
+                    .unwrap()
+            }
             _ => ExecutorEnv::builder()
                 .segment_limit_po2(args.shard_size as u32)
                 .build()
@@ -67,7 +77,7 @@ impl Risc0Evaluator {
 
         // Compute some statistics.
         let mut exec = ExecutorImpl::from_elf(env, &elf).unwrap();
-        //Generate the session.
+        // Generate the session.
         let (session, execution_duration) = time_operation(|| exec.run().unwrap());
         let cycles = session.user_cycles;
 
@@ -118,6 +128,8 @@ impl Risc0Evaluator {
 
         tracing::info!("Done running groth16");
 
+        let groth16_proof_size = bincode::serialize(&groth16_proof).unwrap().len();
+
         // Get the recursive proof size.
         let recursive_proof_size = succinct_receipt.seal.len() * 4;
         let prove_duration = core_prove_duration + compress_duration;
@@ -144,9 +156,12 @@ impl Risc0Evaluator {
             compress_proof_size: recursive_proof_size,
             core_khz,
             overall_khz,
+            shrink_prove_duration: 0.0,
             wrap_prove_duration: wrap_prove_duration.as_secs_f64(),
             groth16_prove_duration: groth16_prove_duration.as_secs_f64(),
-            shrink_prove_duration: 0.0,
+            groth16_proof_size,
+            plonk_prove_duration: 0.0, // TODO(alex): See if risc0 has PLONK out of the box
+            plonk_proof_size: 0,
         }
     }
 
