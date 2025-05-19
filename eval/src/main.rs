@@ -39,7 +39,7 @@ pub struct EvalArgs {
     #[arg(long)]
     filename: String,
     #[arg(long)]
-    block_number: Option<u64>,
+    block_name: Option<String>,
     #[arg(long)]
     fibonacci_input: Option<u32>,
     #[arg(long)]
