@@ -49,6 +49,18 @@ if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
     fi
 fi
 
+revert() {
+  if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
+      echo "Reverting Cargo.toml..."
+      mv Cargo.toml.bak Cargo.toml 2>/dev/null || true
+
+      if [ "$PROGRAM" = "raiko" ]; then
+        mv eval/Cargo.toml.bak eval/Cargo.toml 2>/dev/null || true
+      fi
+  fi
+}
+trap revert EXIT
+
 echo "Building program"
 
 if [ "$PROGRAM" == "raiko" ]; then
