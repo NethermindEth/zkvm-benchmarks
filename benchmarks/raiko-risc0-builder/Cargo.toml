@@ -1,0 +1,16 @@
+[package]
+name = "raiko-risc0-builder"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+raiko-pipeline = { git = "https://github.com/NethermindEth/raiko-proof-aggregation", branch = "zkvm-benchmarks-surge", features = ["risc0"] }
+
+# Override a transitive dependency because latest isn't compatible with outdated risc0 rust version
+bytemuck_derive = { version = "=1.6.0" }
+
+[features]
+test = []
+bench = []

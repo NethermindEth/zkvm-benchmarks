@@ -1,10 +1,17 @@
 #!/bin/bash
 set -e
-echo "Running $@"
+echo "Running $1, $2, $3, $4, $5, $6"
+
+PROGRAM=$1;
+PROVER=$2;
+SHARD_SIZE=$3;
+FILENAME=$4;
+ADDED_ARGS=$5;
+BLOCKS_DIR_SUFFIX=$6;
 
 # Function to check rust version and determine correct parameter name
 check_rust_version() {
-    local toolchain=$1
+    local toolchain=$PROGRAM
     local version_output
 
     if [ -z "$toolchain" ]; then
@@ -26,77 +33,121 @@ check_rust_version() {
     fi
 }
 
-# If $2 == jolt, append precompiles to Cargo.toml
-if [ "$2" = "jolt" ]; then
+# If $PROVER == jolt or $PROGRAM" = raiko, append precompiles to Cargo.toml
+if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
     cp Cargo.toml Cargo.toml.bak
-    cat patches/jolt.txt >> Cargo.toml
+
+    if [ "$PROGRAM" = "raiko" ]; then
+      cp patches/raiko.txt Cargo.toml
+
+      cp eval/Cargo.toml eval/Cargo.toml.bak
+      cp patches/raikoeval.txt eval/Cargo.toml
+    fi
+
+    if [ "$PROVER" = "jolt" ]; then
+      cat patches/jolt.txt >> Cargo.toml
+    fi
 fi
 
-# Get program directory name as $1 and append "-$2" to it if $1 is "tendermint"
-# or "reth"
-if [ "$1" = "tendermint" ] || [ "$1" = "reth" ]; then
-    if [ "$2" = "bento" ]; then
-        program_directory="${1}-risc0" # Use risc0 directory for bento
-    else
-        program_directory="${1}-$2"
-    fi
-else
-    program_directory="$1"
-fi
+revert() {
+  if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
+      echo "Reverting Cargo.toml..."
+      mv Cargo.toml.bak Cargo.toml 2>/dev/null || true
+
+      if [ "$PROGRAM" = "raiko" ]; then
+        mv eval/Cargo.toml.bak eval/Cargo.toml 2>/dev/null || true
+      fi
+  fi
+}
+trap revert EXIT
 
 echo "Building program"
 
-# cd to program directory computed above
-cd "benchmarks/$program_directory"
+if [ "$PROGRAM" == "raiko" ]; then
+    echo "Building Raiko for prover $PROVER"
 
-# If the prover is risc0 or bento, then build the program.
-if [ "$2" == "risc0" ] || [ "$2" == "bento" ]; then
-    echo "Building Risc0"
-    # Use the risc0 toolchain.
-    ATOMIC_PARAM=$(check_rust_version "risc0")
-    CC_riscv32im_risc0_zkvm_elf=~/.risc0/cpp/bin/riscv32-unknown-elf-gcc \
-      RUSTFLAGS="-C passes=$ATOMIC_PARAM -C link-arg=-Ttext=0x00200800 -C link-arg=--fatal-warnings -C panic=abort"\
-      RISC0_FEATURE_bigint2=1\
-      RUSTUP_TOOLCHAIN=risc0 \
-      CARGO_BUILD_TARGET=riscv32im-risc0-zkvm-elf \
-      cargo build --release --features $2
+    # Values from Raiko build script
+    TOOLCHAIN_RISC0=nightly-2024-09-05
+    TOOLCHAIN_SP1=nightly-2024-09-05
 
-# If the prover is sp1, then build the program.
-elif [ "$2" == "sp1" ]; then
-    # The reason we don't just use `cargo prove build` from the SP1 CLI is we need to pass a --features ...
-    # flag to select between sp1 and risc0.
-    ATOMIC_PARAM=$(check_rust_version "succinct")
-    RUSTFLAGS="-C passes=$ATOMIC_PARAM -C link-arg=-Ttext=0x00200800 -C panic=abort" \
-        RUSTUP_TOOLCHAIN=succinct \
-        CARGO_BUILD_TARGET=riscv32im-succinct-zkvm-elf \
-        cargo build --release --ignore-rust-version --features $2
-elif [ "$2" == "lita" ]; then
-  echo "Building Lita"
-  # Use the lita toolchain.
-  CC_valida_unknown_baremetal_gnu="/valida-toolchain/bin/clang" \
-    CFLAGS_valida_unknown_baremetal_gnu="--sysroot=/valida-toolchain -isystem /valida-toolchain/include" \
-    RUSTUP_TOOLCHAIN=valida \
-    CARGO_BUILD_TARGET=valida-unknown-baremetal-gnu \
-    cargo build --release --ignore-rust-version --features $2
+    # Run a builder inherited from Raiko itself
+    if [ "$PROVER" == "sp1" ]; then
+        RUSTUP_TOOLCHAIN=$TOOLCHAIN_SP1 \
+            cargo run --bin raiko-sp1-builder
+    elif [ "$PROVER" == "risc0" ]; then
+        RUSTUP_TOOLCHAIN=$TOOLCHAIN_RISC0 \
+            cargo run --bin raiko-risc0-builder
+    else
+        echo "Prover $PROVER is not supported for Raiko benchmark!"
+        exit
+    fi
+else
+  # Get program directory name as $PROGRAM and append "-$PROGRAM" to it if $PROGRAM is "tendermint"
+  # or "reth"
+  if [ "$PROGRAM" = "tendermint" ] || [ "$PROGRAM" = "reth" ]; then
+      if [ "$PROVER" = "bento" ]; then
+          program_directory="${1}-risc0" # Use risc0 directory for bento
+      else
+          program_directory="${1}-$PROVER"
+      fi
+  else
+      program_directory="$PROGRAM"
+  fi
 
-  # Lita does not have any hardware acceleration. Also it does not have an SDK
-  # or a crate to be used on rust. We need to benchmark it without rust
+  echo "Building program"
+
+  # cd to program directory computed above
+  cd "benchmarks/$program_directory"
+
+  # If the prover is risc0 or bento, then build the program.
+  if [ "$PROVER" == "risc0" ] || [ "$PROVER" == "bento" ]; then
+      echo "Building Risc0"
+      # Use the risc0 toolchain.
+      ATOMIC_PARAM=$(check_rust_version "risc0")
+      CC_riscv32im_risc0_zkvm_elf=~/.risc0/cpp/bin/riscv32-unknown-elf-gcc \
+        RUSTFLAGS="-C passes=$ATOMIC_PARAM -C link-arg=-Ttext=0x00200800 -C link-arg=--fatal-warnings -C panic=abort"\
+        RISC0_FEATURE_bigint2=1\
+        RUSTUP_TOOLCHAIN=risc0 \
+        CARGO_BUILD_TARGET=riscv32im-risc0-zkvm-elf \
+        cargo build --release --features $PROVER
+
+  # If the prover is sp1, then build the program.
+  elif [ "$PROVER" == "sp1" ]; then
+      # The reason we don't just use `cargo prove build` from the SP1 CLI is we need to pass a --features ...
+      # flag to select between sp1 and risc0.
+      ATOMIC_PARAM=$(check_rust_version "succinct")
+      RUSTFLAGS="-C passes=$ATOMIC_PARAM -C link-arg=-Ttext=0x00200800 -C panic=abort" \
+          RUSTUP_TOOLCHAIN=succinct \
+          CARGO_BUILD_TARGET=riscv32im-succinct-zkvm-elf \
+          cargo build --release --ignore-rust-version --features $PROVER
+  elif [ "$PROVER" == "lita" ]; then
+    echo "Building Lita"
+    # Use the lita toolchain.
+    CC_valida_unknown_baremetal_gnu="/valida-toolchain/bin/clang" \
+      CFLAGS_valida_unknown_baremetal_gnu="--sysroot=/valida-toolchain -isystem /valida-toolchain/include" \
+      RUSTUP_TOOLCHAIN=valida \
+      CARGO_BUILD_TARGET=valida-unknown-baremetal-gnu \
+      cargo build --release --ignore-rust-version --features $PROVER
+
+    # Lita does not have any hardware acceleration. Also it does not have an SDK
+    # or a crate to be used on rust. We need to benchmark it without rust
+    cd ../../
+    ./eval_lita.sh "$1" "$2" "$3" "$program_directory" "$5" # Pass potential extra arg $5
+    exit
+  elif [ "$PROVER" == "nexus" ]; then
+    echo "Building Nexus"
+    # Hardcode the memlimit to 8 MB
+    RUSTFLAGS="-C link-arg=--defsym=MEMORY_LIMIT=0x80000 -C link-arg=-T../../nova.x" \
+      CARGO_BUILD_TARGET=riscv32i-unknown-none-elf \
+      RUSTUP_TOOLCHAIN=1.77.0 \
+      cargo build --release --ignore-rust-version --features $PROVER
+  elif [ "$PROVER" == "zisk" ]; then
+    echo "Building Zisk"
+    cargo-zisk build --release --features $PROVER
+  fi
+
   cd ../../
-  ./eval_lita.sh "$1" "$2" "$3" "$program_directory" "$5" # Pass potential extra arg $5
-  exit
-elif [ "$2" == "nexus" ]; then
-  echo "Building Nexus"
-  # Hardcode the memlimit to 8 MB
-  RUSTFLAGS="-C link-arg=--defsym=MEMORY_LIMIT=0x80000 -C link-arg=-T../../nova.x" \
-    CARGO_BUILD_TARGET=riscv32i-unknown-none-elf \
-    RUSTUP_TOOLCHAIN=1.77.0 \
-    cargo build --release --ignore-rust-version --features $2
-elif [ "$2" == "zisk" ]; then
-  echo "Building Zisk"
-  cargo-zisk build --release --features $2
 fi
-
-cd ../../
 
 echo "Running eval script"
 
@@ -115,15 +166,15 @@ export RUST_LOG=info
 
 # Detect whether we're on an instance with a GPU.
 if nvidia-smi > /dev/null 2>&1; then
-  FEATURES="$2, cuda"
+  FEATURES="$PROVER, cuda"
   if [ "$2" = "jolt" ]; then
     export ICICLE_BACKEND_INSTALL_DIR=$(pwd)/target/release/deps/icicle/lib/backend
   fi
 else
-  FEATURES="$2"
+  FEATURES="$PROVER"
 fi
 
-if [ "$2" = "jolt" ]; then
+if [ "$PROVER" = "jolt" ]; then
   export RUSTFLAGS=""
   export RUSTUP_TOOLCHAIN="nightly-2024-09-30"
 fi
@@ -165,15 +216,20 @@ RISC0_INFO=1 \
     --no-default-features \
     --features "$FEATURES" \
     -- \
-    --program "$1" \
-    --prover "$2" \
-    --shard-size "$3" \
-    --filename "$4" \
+    --program "$PROGRAM" \
+    --prover "$PROVER" \
+    --shard-size "$SHARD_SIZE" \
+    --filename "$FILENAME" \
     "${cargo_run_opts[@]}" # Pass optional args safely
+    --taiko-blocks-dir-suffix "$BLOCKS_DIR_SUFFIX"
 
 # Revert Cargo.toml as the last step
-if [ "$2" = "jolt" ]; then
+if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
     mv Cargo.toml.bak Cargo.toml
+
+    if [ "$PROGRAM" = "raiko" ]; then
+      mv eval/Cargo.toml.bak eval/Cargo.toml
+    fi
 fi
 
 exit $?
