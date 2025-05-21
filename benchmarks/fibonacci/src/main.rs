@@ -3,7 +3,7 @@
 
 use core::hint::black_box;
 
-#[cfg(feature = "risc0")]
+#[cfg(any(feature = "risc0", feature = "bento"))]
 risc0_zkvm::guest::entry!(main);
 
 #[cfg(feature = "sp1")]
@@ -14,6 +14,9 @@ valida_rs::entrypoint!(main);
 
 #[cfg(feature = "nexus")]
 use nexus_rt::println;
+
+#[cfg(feature = "zisk")]
+ziskos::entrypoint!(main);
 
 fn fibonacci(n: u32) -> u32 {
     let mut a = 0;
@@ -28,7 +31,7 @@ fn fibonacci(n: u32) -> u32 {
 
 #[cfg_attr(feature = "nexus", nexus_rt::main)]
 pub fn main() {
-    #[cfg(feature = "risc0")]
+    #[cfg(any(feature = "risc0", feature = "bento"))]
     let input: u32 = risc0_zkvm::guest::env::read();
 
     #[cfg(feature = "sp1")]
@@ -40,6 +43,15 @@ pub fn main() {
     #[cfg(feature = "nexus")]
     let input = nexus_rt::read_private_input::<u32>().unwrap();
 
+    #[cfg(feature = "zisk")]
+    let input = zisk_input();
+
     let result = black_box(fibonacci(black_box(input)));
     println!("result {}", result);
+}
+
+#[cfg(feature = "zisk")]
+fn zisk_input() -> u32 {
+    let input: Vec<u8> = ziskos::read_input();
+    u32::from_le_bytes(input.try_into().unwrap())
 }

@@ -9,7 +9,7 @@ use risc0_zkvm::{
 #[cfg(feature = "risc0")]
 use crate::{
     types::ProgramId,
-    utils::{get_elf, get_raiko_input, get_reth_input, time_operation},
+    utils::{get_raiko_input, get_reth_input, risc0v2::generate_risc0_v2_elf, time_operation},
 };
 
 use crate::{EvalArgs, PerformanceReport};
@@ -37,7 +37,7 @@ impl Risc0Evaluator {
             _ => args.program.to_string(),
         };
 
-        let elf_path = get_elf(args);
+        let elf_path = generate_risc0_v2_elf(args);
         let elf = fs::read(&elf_path).unwrap();
         let image_id = compute_image_id(elf.as_slice()).unwrap();
 
@@ -116,11 +116,14 @@ impl Risc0Evaluator {
         // GROTH 16 conversion
         // Bn254 wrapping duration
 
-        let (bn254_proof, wrap_prove_duration) =
-            time_operation(|| prover.identity_p254(&succinct_receipt).unwrap());
+        let (bn254_proof, wrap_prove_duration) = time_operation(|| {
+            prover
+                .identity_p254(&compressed_proof.inner.succinct().unwrap())
+                .unwrap()
+        });
         let seal_bytes = bn254_proof.get_seal_bytes();
         tracing::info!("Running groth16 wrapper");
-        let (groth16_proof, groth16_prove_duration) =
+        let (_, groth16_prove_duration) =
             time_operation(|| risc0_zkvm::stark_to_snark(&seal_bytes).unwrap());
 
         tracing::info!("Done running groth16");

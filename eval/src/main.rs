@@ -1,15 +1,18 @@
+mod bento;
 mod jolt;
 mod nexus;
 mod risc0;
 mod sp1;
 mod types;
 mod utils;
+mod zisk;
 
 use std::{
     fs::{create_dir_all, OpenOptions},
     path::PathBuf,
 };
 
+use bento::BentoEvaluator;
 use clap::Parser;
 use csv::WriterBuilder;
 use eyre::Result;
@@ -20,6 +23,7 @@ use types::{ProgramId, ProverId};
 
 use risc0::Risc0Evaluator;
 use sp1::SP1Evaluator;
+use zisk::ZiskEvaluator;
 
 #[derive(Parser, Clone)]
 #[command(about = "Evaluate the performance of a zkVM on a program.")]
@@ -38,6 +42,8 @@ pub struct EvalArgs {
     block_name: Option<String>,
     #[arg(long)]
     fibonacci_input: Option<u32>,
+    #[arg(long)]
+    bento_url: Option<String>,
     #[arg(long)]
     taiko_blocks_dir_suffix: Option<String>,
 }
@@ -114,6 +120,8 @@ fn main() -> Result<()> {
         ProverId::SP1 => SP1Evaluator::eval(&args),
         ProverId::Jolt => JoltEvaluator::eval(&args),
         ProverId::Nexus => NexusEvaluator::eval(&args),
+        ProverId::Zisk => ZiskEvaluator::eval(&args),
+        ProverId::Bento => BentoEvaluator::eval(&args),
     };
 
     // Create the results directory if it doesn't exist.

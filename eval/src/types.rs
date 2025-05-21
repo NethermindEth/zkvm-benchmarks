@@ -8,6 +8,8 @@ pub enum ProverId {
     SP1,
     Jolt,
     Nexus,
+    Zisk,
+    Bento,
 }
 
 impl Display for ProverId {
@@ -17,6 +19,8 @@ impl Display for ProverId {
             ProverId::SP1 => write!(f, "sp1"),
             ProverId::Jolt => write!(f, "jolt"),
             ProverId::Nexus => write!(f, "nexus"),
+            ProverId::Zisk => write!(f, "zisk"),
+            ProverId::Bento => write!(f, "bento"),
         }
     }
 }

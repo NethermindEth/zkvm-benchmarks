@@ -3,53 +3,76 @@ from itertools import product
 import subprocess
 
 
+def build_eval_command(program, prover, shard_size, filename, extra_arg=None, bento_url=None):
+    """Helper function to build the eval.sh command with consistent format"""
+    # Determine the actual program name to pass to eval.sh
+    actual_program = "reth" if program.startswith("reth") else program
+
+    # Build the command
+    cmd = [
+        "bash",
+        "eval.sh",
+        actual_program,
+        prover,
+        str(shard_size),
+        filename,
+    ]
+
+    # Add extra argument if provided
+    if extra_arg is not None:
+        cmd.append(str(extra_arg))
+
+    # Add bento_url if provided and prover is bento
+    if prover == "bento":
+        cmd.append(str(bento_url))
+
+    return cmd
+
+
 def run_benchmark(
     filename,
     trials,
     programs,
     provers,
-    # hashfns,
     shard_sizes,
-    block_1,
-    block_2,
+    blocks,
     fibonacci_inputs,
+    bento_url,
 ):
-    option_combinations = product(programs, provers, shard_sizes)  # hashfns)
+    option_combinations = product(programs, provers, shard_sizes)
     for program, prover, shard_size in option_combinations:
-        if shard_size != shard_sizes[0]:
-            # Only sp1 supports different shard size
+        if shard_size != shard_sizes[0] and prover != "sp1":
+            # Skip shard size variations for provers other than SP1
+            print(
+                f"Skipping {program}/{prover} with shard size {shard_size} (only SP1 supports different shard sizes)"
+            )
             continue
 
         print(f"Running: {program} {prover} {shard_size}")
+
         if program == "fibonacci":
+            # Run fibonacci with each input value
             for fib_input in fibonacci_inputs:
+                print(f"  With fibonacci input {fib_input}")
                 for _ in range(trials):
-                    cmd = [
-                        "bash",
-                        "eval.sh",
-                        "reth" if program.startswith("reth") else program,
-                        prover,
-                        str(shard_size),
-                        filename,
-                        str(fib_input),
-                    ]
-
+                    cmd = build_eval_command(
+                        program, prover, shard_size, filename, fib_input, bento_url
+                    )
                     subprocess.run(cmd)
-        else:
-            cmd = [
-                "bash",
-                "eval.sh",
-                "reth" if program.startswith("reth") else program,
-                prover,
-                str(shard_size),
-                filename,
-            ]
-            if program == "reth1":
-                cmd.append(block_1)
-            elif program == "reth2":
-                cmd.append(block_2)
 
+        elif program.startswith("reth"):
+            for block in blocks:
+                print(f"  With block {block}")
+                for _ in range(trials):
+                    cmd = build_eval_command(
+                        program, prover, shard_size, filename, block, bento_url
+                    )
+                    subprocess.run(cmd)
+
+        else:
+            # Other programs without extra args
             for _ in range(trials):
+                cmd = build_eval_command(program, prover, shard_size, filename, None, bento_url)
                 subprocess.run(cmd)
 
 
@@ -64,24 +87,17 @@ def main():
     parser.add_argument(
         "--programs",
         nargs="+",
-        default=["loop", "fibonacci", "tendermint", "reth1", "reth2"],
+        default=["loop", "fibonacci", "tendermint", "reth16", "reth30"],
         help="List of programs to benchmark",
-        choices=["loop", "fibonacci", "tendermint", "reth1", "reth2"],
+        choices=["loop", "fibonacci", "tendermint", "reth", "reth1", "reth16", "reth30"],
     )
     parser.add_argument(
         "--provers",
         nargs="+",
         default=["sp1"],
         help="List of provers to use",
-        choices=["sp1", "risc0", "lita", "jolt", "nexus"],
+        choices=["sp1", "risc0", "lita", "jolt", "nexus", "zisk", "bento"],
     )
-    # parser.add_argument(
-    #     "--hashfns",
-    #     nargs="+",
-    #     default=["poseidon"],
-    #     help="List of hash functions to use",
-    #     choices=["poseidon"],
-    # )
     parser.add_argument(
         "--shard-sizes",
         type=int,
@@ -89,26 +105,62 @@ def main():
         default=[21],
         help="List of shard sizes to use",
     )
-    parser.add_argument("--block-1", default="17106222", help="Block number for reth1")
-    parser.add_argument("--block-2", default="19409768", help="Block number for reth2")
+
+    parser.add_argument(
+        "--blocks",
+        nargs="+",
+        default=None,
+        help="List of block numbers for reth tests",
+    )
+
     parser.add_argument(
         "--fibonacci",
+        nargs="+",
+        type=int,
         default=[100, 1000, 10000, 300000],
-        help="input for fibonacci",
+        help="Input values for fibonacci benchmarks",
+    )
+
+    parser.add_argument(
+        "--bento-url",
+        help="URL for Bento prover",
+        default="http://localhost:8081",
     )
 
     args = parser.parse_args()
+
+    # Initialize blocks list
+    blocks = []
+
+    # Handle block arguments
+    if args.blocks:
+        # Start with the blocks provided via --blocks
+        blocks = args.blocks
+
+    # Append block numbers if respective flags are enabled
+    if "reth1" in args.programs:
+        blocks.append("22014900")
+    if "reth16" in args.programs:
+        blocks.append("17106222")
+    if "reth30" in args.programs:
+        blocks.append("19409768")
+
+    # If no blocks were specified, use default block for backward compatibility
+    if not blocks and any(p.startswith("reth") for p in args.programs):
+        print(
+            "Warning: No blocks specified. Using default block 17106222 for reth programs."
+        )
+        blocks = ["17106222"]
 
     run_benchmark(
         args.filename,
         args.trials,
         args.programs,
         args.provers,
-        # args.hashfns,
         args.shard_sizes,
-        args.block_1,
-        args.block_2,
+        blocks,
         args.fibonacci,
+        args.bento_url,
     )
 
 

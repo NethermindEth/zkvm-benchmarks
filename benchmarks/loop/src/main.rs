@@ -17,7 +17,7 @@
 #![no_main]
 #![cfg_attr(feature = "nexus", no_std)]
 
-#[cfg(feature = "risc0")]
+#[cfg(any(feature = "risc0", feature = "bento"))]
 risc0_zkvm::guest::entry!(main);
 
 #[cfg(feature = "sp1")]
@@ -28,6 +28,9 @@ valida_rs::entrypoint!(main);
 
 #[cfg(target_os = "zkvm")]
 use core::arch::asm;
+
+#[cfg(feature = "zisk")]
+ziskos::entrypoint!(main);
 
 #[cfg_attr(feature = "nexus", nexus_rt::main)]
 fn main() {

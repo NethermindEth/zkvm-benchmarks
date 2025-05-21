@@ -2,7 +2,8 @@
 use std::fs;
 #[cfg(feature = "sp1")]
 use sp1_prover::{
-    build, components::CpuProverComponents, utils::get_cycles,
+    build::try_build_groth16_bn254_artifacts_dev, components::CpuProverComponents,
+    utils::get_cycles,
 };
 #[cfg(feature = "sp1")]
 use sp1_sdk::{setup_logger, SP1Context, SP1Prover, SP1Stdin};
@@ -51,25 +52,24 @@ impl SP1Evaluator {
         let stdin = {
             let mut stdin = SP1Stdin::new();
             match args.program {
-                ProgramId::Reth => {
-                    let input = get_reth_input(args);
-                    stdin.write_vec(input);
-                }
-                ProgramId::Fibonacci => {
-                    stdin.write(&args.fibonacci_input.expect("missing fibonacci input"));
-                }
-                ProgramId::Raiko => {
-                    let input = get_raiko_input(args);
-                    stdin.write(&input);
-                }
+            ProgramId::Reth => {
+                let input = get_reth_input(args);
+                stdin.write_vec(input);
+            }
+            ProgramId::Fibonacci => {
+                stdin.write(&args.fibonacci_input.expect("missing fibonacci input"));
+            }
+            ProgramId::Raiko => {
+                let input = get_raiko_input(args);
+                stdin.write(&input);
+            }
                 _ => (/* NOOP */),
             }
             stdin
         };
 
         let elf_path = get_elf(args);
-        let elf = fs::read(&elf_path).unwrap();
-
+        let elf = fs::read(elf_path).unwrap();
         let cycles = get_cycles(&elf, &stdin);
 
         let prover = SP1Prover::<CpuProverComponents>::new();
