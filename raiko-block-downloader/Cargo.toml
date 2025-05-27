@@ -1,0 +1,31 @@
+[package]
+name = "raiko-block-downloader"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+# raiko
+# NOTE: These are NOT dependent on workspace crates becase we want to download blocks independently of
+# prover-related changes
+raiko-lib = { git = "https://github.com/NethermindEth/raiko" }
+raiko-core = { git = "https://github.com/NethermindEth/raiko" }
+
+# alloy
+alloy-primitives = { workspace = true }
+
+# tracing and logging
+tracing = { workspace = true }
+tracing-subscriber.workspace = true
+
+# errors
+anyhow = { workspace = true }
+
+# serde
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# async
+tokio = { workspace = true }
+
+# cli
+clap = { workspace = true }

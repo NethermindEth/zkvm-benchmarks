@@ -29,7 +29,7 @@ impl BentoEvaluator {
             ProgramId::Reth => format!(
                 "{}_{}",
                 args.program.to_string(),
-                args.block_number.unwrap().to_string()
+                args.block_name.as_deref().unwrap().to_string()
             ),
             ProgramId::Fibonacci => format!(
                 "{}_{}",

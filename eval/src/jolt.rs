@@ -103,9 +103,12 @@ impl JoltEvaluator {
             compress_proof_size: 0,
             core_khz,
             overall_khz,
+            shrink_prove_duration: 0.0,
             wrap_prove_duration: 0.0,
             groth16_prove_duration: 0.0,
-            shrink_prove_duration: 0.0,
+            groth16_proof_size: 0,
+            plonk_prove_duration: 0.0,
+            plonk_proof_size: 0,
         }
     }
 

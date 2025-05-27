@@ -1,0 +1,152 @@
+[
+    {
+        "name": "holesky",
+        "chain_id": 17000,
+        "max_spec_id": "CANCUN",
+        "hard_forks": {
+            "FRONTIER": {
+                "Block": 0
+            },
+            "SHANGHAI": {
+                "Timestamp": 1696000704
+            },
+            "CANCUN": {
+                "Timestamp": 1707305664
+            }
+        },
+        "eip_1559_constants": {
+            "base_fee_change_denominator": "0x8",
+            "base_fee_max_increase_denominator": "0x8",
+            "base_fee_max_decrease_denominator": "0x8",
+            "elasticity_multiplier": "0x2"
+        },
+        "l1_contract": null,
+        "l2_contract": null,
+        "rpc": "https://ethereum-holesky-rpc.publicnode.com",
+        "beacon_rpc": "https://fabled-weathered-cherry.ethereum-holesky.quiknode.pro/8f1c66935fa5f9afbda0db43318fe3c9e7b061e1/",
+        "verifier_address_forks": {
+            "FRONTIER": {
+                "SGX": "0x532efbf6d62720d0b2a2bb9d11066e8588cae6d9",
+                "SP1": null,
+                "RISC0": "0x0000000000000000000000000000000000000000"
+            }
+        },
+        "genesis_time": 1695902400,
+        "seconds_per_slot": 12,
+        "is_taiko": false
+    },
+    {
+        "name": "holesky_surge",
+        "chain_id": 17000,
+        "max_spec_id": "CANCUN",
+        "hard_forks": {
+            "FRONTIER": {
+                "Block": 0
+            },
+            "SHANGHAI": {
+                "Timestamp": 1696000704
+            },
+            "CANCUN": {
+                "Timestamp": 1707305664
+            }
+        },
+        "eip_1559_constants": {
+            "base_fee_change_denominator": "0x8",
+            "base_fee_max_increase_denominator": "0x8",
+            "base_fee_max_decrease_denominator": "0x8",
+            "elasticity_multiplier": "0x2"
+        },
+        "l1_contract": null,
+        "l2_contract": null,
+        "rpc": "https://l1-rpc.surge.staging-nethermind.xyz/execution",
+        "beacon_rpc": "https://l1-rpc.surge.staging-nethermind.xyz/beacon",
+        "verifier_address_forks": {
+            "FRONTIER": {
+                "SGX": "0x532efbf6d62720d0b2a2bb9d11066e8588cae6d9",
+                "SP1": null,
+                "RISC0": "0x0000000000000000000000000000000000000000"
+            }
+        },
+        "genesis_time": 1695902400,
+        "seconds_per_slot": 12,
+        "is_taiko": false
+    },
+    {
+        "name": "taiko_a7",
+        "chain_id": 167009,
+        "max_spec_id": "ONTAKE",
+        "hard_forks": {
+            "HEKLA": {
+                "Block": 0
+            },
+            "ONTAKE": {
+                "Block": 840512
+            },
+            "CANCUN": "TBD"
+        },
+        "eip_1559_constants": {
+            "base_fee_change_denominator": "0x8",
+            "base_fee_max_increase_denominator": "0x8",
+            "base_fee_max_decrease_denominator": "0x8",
+            "elasticity_multiplier": "0x2"
+        },
+        "l1_contract": "0x79c9109b764609df928d16fc4a91e9081f7e87db",
+        "l2_contract": "0x1670090000000000000000000000000000010001",
+        "rpc": "https://rpc.hekla.taiko.xyz",
+        "beacon_rpc": null,
+        "verifier_address_forks": {
+            "HEKLA": {
+                "SGX": "0x532efbf6d62720d0b2a2bb9d11066e8588cae6d9",
+                "SP1": "0xFbE49f777E0078b3Fa0bae6de4794c88d6EA6DDD",
+                "RISC0": "0x4fEd801C5a876D4289e869cbEfA1E1A448b10714"
+            },
+            "ONTAKE": {
+                "SGX": "0x532efbf6d62720d0b2a2bb9d11066e8588cae6d9",
+                "SP1": "0xFbE49f777E0078b3Fa0bae6de4794c88d6EA6DDD",
+                "RISC0": "0x4fEd801C5a876D4289e869cbEfA1E1A448b10714"
+            }
+        },
+        "genesis_time": 0,
+        "seconds_per_slot": 1,
+        "is_taiko": true
+    },
+    {
+        "name": "surge_dev",
+        "chain_id": 763374,
+        "max_spec_id": "ONTAKE",
+        "hard_forks": {
+            "HEKLA": {
+                "Block": 0
+            },
+            "ONTAKE": {
+                "Block": 1
+            },
+            "CANCUN": "TBD"
+        },
+        "eip_1559_constants": {
+            "base_fee_change_denominator": "0x8",
+            "base_fee_max_increase_denominator": "0x8",
+            "base_fee_max_decrease_denominator": "0x8",
+            "elasticity_multiplier": "0x2"
+        },
+        "l1_contract": "0x0107Bf185DBed21fe0dF3809340a4422c157Fa84",
+        "l2_contract": "0x7633740000000000000000000000000000010001",
+        "rpc": "https://l2-rpc.surge.staging-nethermind.xyz",
+        "beacon_rpc": null,
+        "verifier_address_forks": {
+            "HEKLA": {
+                "SGX": "0x715f9c52dfd40a8Dd8D6027B7769af47d1d9dFFB",
+                "SP1": "0x218152a9a24C8a6750B0dc068Bb2c1c654530CA7",
+                "RISC0": "0xfE92587Bb40816D97B6490F3D75b264898c2526f"
+            },
+            "ONTAKE": {
+                "SGX": "0x715f9c52dfd40a8Dd8D6027B7769af47d1d9dFFB",
+                "SP1": "0x218152a9a24C8a6750B0dc068Bb2c1c654530CA7",
+                "RISC0": "0xfE92587Bb40816D97B6490F3D75b264898c2526f"
+            }
+        },
+        "genesis_time": 0,
+        "seconds_per_slot": 1,
+        "is_taiko": true
+    }
+]

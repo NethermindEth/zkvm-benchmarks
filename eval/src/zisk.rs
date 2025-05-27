@@ -17,7 +17,7 @@ impl ZiskEvaluator {
             ProgramId::Reth => format!(
                 "{}_{}",
                 args.program.to_string(),
-                args.block_number.unwrap().to_string()
+                args.block_name.as_deref().unwrap().to_string()
             ),
             ProgramId::Fibonacci => format!(
                 "{}_{}",
@@ -34,25 +34,25 @@ impl ZiskEvaluator {
 
         match args.program {
             ProgramId::Reth => {
-                let block_number = args
-                    .block_number
+                let block_name = args
+                    .block_name
                     .expect("Block number is required for Reth program");
                 let current_dir =
                     env::current_dir().expect("failed to get current working directory");
 
                 let blocks_dir = current_dir.join("eval").join("blocks");
-                let file_path = blocks_dir.join(format!("{}.bin", block_number));
+                let file_path = blocks_dir.join(format!("{}.bin", block_name));
                 prove.arg("-i").arg(file_path);
             }
             ProgramId::Fibonacci => {
-                let block_number = args
+                let block_name = args
                     .fibonacci_input
                     .expect("Fibonacci input is required for Fibonacci program");
                 let current_dir =
                     env::current_dir().expect("failed to get current working directory");
 
                 let blocks_dir = current_dir.join("eval").join("fibonacci");
-                let file_path = blocks_dir.join(format!("{}.bin", block_number));
+                let file_path = blocks_dir.join(format!("{}.bin", block_name));
                 prove.arg("-i").arg(file_path);
             }
             _ => {}

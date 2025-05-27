@@ -1,5 +1,9 @@
 **/target
 
+# IDE settings
+.idea
+.vscode
+
 # Benchmark results
 **/.csv
 **/*.csv

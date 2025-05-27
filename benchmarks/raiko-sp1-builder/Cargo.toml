@@ -1,0 +1,15 @@
+# This crate was adapted from Raiko prover builder with values appropriate to benchmarking file names and dir structure.
+
+[package]
+name = "raiko-sp1-builder"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+raiko-pipeline = { git = "https://github.com/NethermindEth/raiko-proof-aggregation", branch = "zkvm-benchmarks-surge", features = ["sp1"] }
+
+[features]
+test = []
+bench = []
