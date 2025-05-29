@@ -63,28 +63,28 @@ trap revert EXIT
 
 echo "Building program"
 
-if [ "$PROGRAM" == "raiko" ]; then
-    echo "Building Raiko for prover $PROVER"
+# if [ "$PROGRAM" == "raiko" ]; then
+#     echo "Building Raiko for prover $PROVER"
 
-    # Values from Raiko build script
-    TOOLCHAIN_RISC0=nightly-2024-09-05
-    TOOLCHAIN_SP1=nightly-2024-09-05
+#     # Values from Raiko build script
+#     TOOLCHAIN_RISC0=nightly-2024-09-05
+#     TOOLCHAIN_SP1=nightly-2024-09-05
 
-    # Run a builder inherited from Raiko itself
-    if [ "$PROVER" == "sp1" ]; then
-        RUSTUP_TOOLCHAIN=$TOOLCHAIN_SP1 \
-            cargo run --bin raiko-sp1-builder
-    elif [ "$PROVER" == "risc0" ]; then
-        RUSTUP_TOOLCHAIN=$TOOLCHAIN_RISC0 \
-            cargo run --bin raiko-risc0-builder
-    else
-        echo "Prover $PROVER is not supported for Raiko benchmark!"
-        exit
-    fi
-else
+#     # Run a builder inherited from Raiko itself
+#     if [ "$PROVER" == "sp1" ]; then
+#         RUSTUP_TOOLCHAIN=$TOOLCHAIN_SP1 \
+#             cargo run --bin raiko-sp1-builder
+#     elif [ "$PROVER" == "risc0" ]; then
+#         RUSTUP_TOOLCHAIN=$TOOLCHAIN_RISC0 \
+#             cargo run --bin raiko-risc0-builder
+#     else
+#         echo "Prover $PROVER is not supported for Raiko benchmark!"
+#         exit
+#     fi
+# else
   # Get program directory name as $PROGRAM and append "-$PROGRAM" to it if $PROGRAM is "tendermint"
   # or "reth"
-  if [ "$PROGRAM" = "tendermint" ] || [ "$PROGRAM" = "reth" ]; then
+  if [ "$PROGRAM" = "tendermint" ] || [ "$PROGRAM" = "reth" ] || [ "$PROGRAM" = "raiko" ]; then
       if [ "$PROVER" = "bento" ]; then
           program_directory="${1}-risc0" # Use risc0 directory for bento
       else
@@ -92,7 +92,7 @@ else
       fi
   else
       program_directory="$PROGRAM"
-  fi
+# fi
 
   echo "Building program"
 
