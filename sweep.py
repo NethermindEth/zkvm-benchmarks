@@ -3,7 +3,7 @@ from itertools import product
 import subprocess
 
 
-def build_eval_command(program, prover, shard_size, filename, extra_arg=None, bento_url=None):
+def build_eval_command(program, prover, shard_size, filename, extra_arg=None, bento_url=None, env=None):
     """Helper function to build the eval.sh command with consistent format"""
     # Determine the actual program name to pass to eval.sh
     actual_program = "reth" if program.startswith("reth") else program
@@ -22,6 +22,10 @@ def build_eval_command(program, prover, shard_size, filename, extra_arg=None, be
     if extra_arg is not None:
         cmd.append(str(extra_arg))
 
+    # Add env if provided "surgdev"
+    if env is not None:
+        cmd.append(str(env))
+
     # Add bento_url if provided and prover is bento
     if prover == "bento":
         cmd.append(str(bento_url))
@@ -38,6 +42,7 @@ def run_benchmark(
     blocks,
     fibonacci_inputs,
     bento_url,
+    env,
 ):
     option_combinations = product(programs, provers, shard_sizes)
     for program, prover, shard_size in option_combinations:
@@ -68,6 +73,15 @@ def run_benchmark(
                         program, prover, shard_size, filename, block, bento_url
                     )
                     subprocess.run(cmd)
+        elif program == "raiko":
+            for block in blocks:
+                print(f"  With block {block}")
+                for _ in range(trials):
+                    cmd = build_eval_command(
+                        program, prover, shard_size, filename, block, bento_url, env
+                    )
+                    subprocess.run(cmd)
+
 
         else:
             # Other programs without extra args
@@ -89,7 +103,7 @@ def main():
         nargs="+",
         default=["loop", "fibonacci", "tendermint", "reth16", "reth30"],
         help="List of programs to benchmark",
-        choices=["loop", "fibonacci", "tendermint", "reth", "reth1", "reth16", "reth30"],
+        choices=["loop", "fibonacci", "tendermint", "reth", "reth1", "reth16", "reth30", "raiko"],
     )
     parser.add_argument(
         "--provers",
@@ -127,6 +141,12 @@ def main():
         default="http://localhost:8081",
     )
 
+    parser.add_argument(
+        "--env",
+        default=None,
+        help="Environment for program",
+    )
+
     args = parser.parse_args()
 
     # Initialize blocks list
@@ -161,6 +181,7 @@ def main():
         blocks,
         args.fibonacci,
         args.bento_url,
+        args.env,
     )
 
 
