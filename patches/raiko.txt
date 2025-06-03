@@ -50,7 +50,7 @@ alloy-provider = { version = "0.3", default-features = false, features = [
 # SP1
 sp1-sdk = { git = "https://github.com/NethermindEth/sp1.git", branch = "v4.0.1-single-gpu", features = ["cuda"] }
 sp1-prover = { git = "https://github.com/NethermindEth/sp1.git", branch = "v4.0.1-single-gpu" }
-sp1-zkvm = { git = "https://github.com/NethermindEth/sp1.git", branch = "v4.0.1-single-gpu" }
+sp1-zkvm = { git = "https://github.com/NethermindEth/sp1.git", branch = "v4.1.7-single-gpu" }
 sp1-helper = { git = "https://github.com/NethermindEth/sp1.git", branch = "v4.0.1-single-gpu" }
 sp1-cuda = { git = "https://github.com/NethermindEth/sp1.git", branch = "v4.0.1-single-gpu" }
 sp1-stark = { git = "https://github.com/NethermindEth/sp1.git", branch = "v4.0.1-single-gpu" }
