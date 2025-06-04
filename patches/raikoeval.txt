@@ -50,7 +50,7 @@ sp1-helper = { workspace = true, optional = true }
 
 [features]
 cuda = ["dep:sp1-cuda", "risc0-zkvm?/cuda", "jolt-sdk?/icicle"]
-risc0 = ["dep:risc0-zkvm"]
+risc0 = ["dep:risc0-zkvm", "dep:risc0-binfmt"]
 sp1 = ["dep:sp1-prover", "dep:sp1-sdk", "dep:sp1-stark"]
 jolt = ["dep:jolt-sdk", "dep:fibonacci", "dep:loop-j", "dep:tendermint-j"]
 nexus = ["dep:nexus-sdk"]
