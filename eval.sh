@@ -15,7 +15,7 @@ check_rust_version() {
     local toolchain=$PROGRAM
     local version_output
 
-    if [ -z "$toolchain" ]; then
+    if [ -z "$toolchain" ] || [ "$toolchain" = "raiko" ]; then
         version_output=$(rustc --version)
     else
         version_output=$(rustc +$toolchain --version)
@@ -203,8 +203,13 @@ RISC0_INFO=1 \
     --prover "$PROVER" \
     --shard-size "$SHARD_SIZE" \
     --filename "$FILENAME" \
-    "${cargo_run_opts[@]}" # Pass optional args safely
+    ${ADDED_ARGS:+$(
+      [[ "$PROGRAM" == "fibonacci" ]] && echo "--fibonacci-input" || echo "--block-name"
+    ) $ADDED_ARGS} \
     --taiko-blocks-dir-suffix "$BLOCKS_DIR_SUFFIX"
+
+    # "${cargo_run_opts[@]}" # Pass optional args safely
+    # --taiko-blocks-dir-suffix "$BLOCKS_DIR_SUFFIX"
 
 # Revert Cargo.toml as the last step
 if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then

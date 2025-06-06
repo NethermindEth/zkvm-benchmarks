@@ -46,3 +46,4 @@ sp1-cycle-tracker = [
     "raiko-lib/sp1-cycle-tracker",
     "revm-precompile/sp1-cycle-tracker",
 ]
+sp1 = []
