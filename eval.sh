@@ -2,6 +2,7 @@
 set -e
 echo "Running $1, $2, $3, $4, $5, $6"
 
+ROOT_DIR=$(realpath ../zkvm-benchmarks);
 PROGRAM=$1;
 PROVER=$2;
 SHARD_SIZE=$3;
@@ -51,6 +52,7 @@ fi
 
 revert() {
   if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
+      cd "$ROOT_DIR"
       echo "Reverting Cargo.toml..."
       mv Cargo.toml.bak Cargo.toml 2>/dev/null || true
 
