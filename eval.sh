@@ -73,6 +73,7 @@ echo "Building program"
       fi
   else
       program_directory="$PROGRAM"
+  fi
 
   echo "Building program"
 
@@ -127,7 +128,7 @@ echo "Building program"
   fi
 
   cd ../../
-fi
+
 
 echo "Running eval script"
 
