@@ -5,8 +5,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-risc0-zkvm = { version = "2.0.1", default-features = false, features = ["std", "unstable"] }
-risc0-zkvm-platform = { version = "2.0.1", default-features = false, features = ["sys-getenv"] }
+risc0-zkvm = { version = "2.1.0", default-features = false, features = ["std", "unstable"] }
+risc0-zkvm-platform = { version = "2.1.0", default-features = false, features = ["sys-getenv"] }
 c-kzg = { version = "=1.0.3", features = ["risc0-ffi"] }
 
 rsp-client-executor = { git = "https://github.com/succinctlabs/rsp/", rev = "4ceefdfb74c1691dd009168f0c7aec3d746ef8b3" }
