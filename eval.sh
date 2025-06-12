@@ -2,6 +2,7 @@
 set -e
 echo "Running $1, $2, $3, $4, $5, $6"
 
+ROOT_DIR=$(realpath ../zkvm-benchmarks);
 PROGRAM=$1;
 PROVER=$2;
 SHARD_SIZE=$3;
@@ -14,7 +15,7 @@ check_rust_version() {
     local toolchain=$PROGRAM
     local version_output
 
-    if [ -z "$toolchain" ]; then
+    if [ -z "$toolchain" ] || [ "$toolchain" = "raiko" ]; then
         version_output=$(rustc --version)
     else
         version_output=$(rustc +$toolchain --version)
@@ -51,6 +52,7 @@ fi
 
 revert() {
   if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
+      cd "$ROOT_DIR"
       echo "Reverting Cargo.toml..."
       mv Cargo.toml.bak Cargo.toml 2>/dev/null || true
 
@@ -63,28 +65,9 @@ trap revert EXIT
 
 echo "Building program"
 
-if [ "$PROGRAM" == "raiko" ]; then
-    echo "Building Raiko for prover $PROVER"
-
-    # Values from Raiko build script
-    TOOLCHAIN_RISC0=nightly-2024-09-05
-    TOOLCHAIN_SP1=nightly-2024-09-05
-
-    # Run a builder inherited from Raiko itself
-    if [ "$PROVER" == "sp1" ]; then
-        RUSTUP_TOOLCHAIN=$TOOLCHAIN_SP1 \
-            cargo run --bin raiko-sp1-builder
-    elif [ "$PROVER" == "risc0" ]; then
-        RUSTUP_TOOLCHAIN=$TOOLCHAIN_RISC0 \
-            cargo run --bin raiko-risc0-builder
-    else
-        echo "Prover $PROVER is not supported for Raiko benchmark!"
-        exit
-    fi
-else
   # Get program directory name as $PROGRAM and append "-$PROGRAM" to it if $PROGRAM is "tendermint"
   # or "reth"
-  if [ "$PROGRAM" = "tendermint" ] || [ "$PROGRAM" = "reth" ]; then
+  if [ "$PROGRAM" = "tendermint" ] || [ "$PROGRAM" = "reth" ] || [ "$PROGRAM" = "raiko" ]; then
       if [ "$PROVER" = "bento" ]; then
           program_directory="${1}-risc0" # Use risc0 directory for bento
       else
@@ -147,7 +130,7 @@ else
   fi
 
   cd ../../
-fi
+
 
 echo "Running eval script"
 
@@ -220,8 +203,13 @@ RISC0_INFO=1 \
     --prover "$PROVER" \
     --shard-size "$SHARD_SIZE" \
     --filename "$FILENAME" \
-    "${cargo_run_opts[@]}" # Pass optional args safely
+    ${ADDED_ARGS:+$(
+      [[ "$PROGRAM" == "fibonacci" ]] && echo "--fibonacci-input" || echo "--block-name"
+    ) $ADDED_ARGS} \
     --taiko-blocks-dir-suffix "$BLOCKS_DIR_SUFFIX"
+
+    # "${cargo_run_opts[@]}" # Pass optional args safely
+    # --taiko-blocks-dir-suffix "$BLOCKS_DIR_SUFFIX"
 
 # Revert Cargo.toml as the last step
 if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then

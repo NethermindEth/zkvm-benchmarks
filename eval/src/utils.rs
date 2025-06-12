@@ -67,9 +67,6 @@ pub fn read_block(blocks_dir_name: &str, block_name: &str, ext: &str) -> Vec<u8>
                 panic!("Unable to read block file: {:?}", e);
             }
         }
-    } else {
-        panic!("Block number is required for Reth program");
-    }
 }
 
 pub fn time_operation<T, F: FnOnce() -> T>(operation: F) -> (T, Duration) {

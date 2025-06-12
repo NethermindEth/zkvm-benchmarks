@@ -123,7 +123,7 @@ impl Risc0Evaluator {
         });
         let seal_bytes = bn254_proof.get_seal_bytes();
         tracing::info!("Running groth16 wrapper");
-        let (_, groth16_prove_duration) =
+        let (groth16_proof, groth16_prove_duration) =
             time_operation(|| risc0_zkvm::stark_to_snark(&seal_bytes).unwrap());
 
         tracing::info!("Done running groth16");
