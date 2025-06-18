@@ -10,30 +10,6 @@ FILENAME=$4;
 ADDED_ARGS=$5;
 BLOCKS_DIR_SUFFIX=$6;
 
-# Function to check rust version and determine correct parameter name
-check_rust_version() {
-    local toolchain=$PROGRAM
-    local version_output
-
-    if [ -z "$toolchain" ] || [ "$toolchain" = "raiko" ]; then
-        version_output=$(rustc --version)
-    else
-        version_output=$(rustc +$toolchain --version)
-    fi
-
-    # Extract version number
-    local version=$(echo "$version_output" | sed -E 's/rustc ([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-    local major=$(echo "$version" | cut -d. -f1)
-    local minor=$(echo "$version" | cut -d. -f2)
-
-    # Compare version with 1.81
-    if [ "$major" -gt 1 ] || ([ "$major" -eq 1 ] && [ "$minor" -gt 81 ]); then
-        echo "lower-atomic"  # New parameter name for Rust >= 1.81
-    else
-        echo "loweratomic"   # Old parameter name for Rust < 1.81
-    fi
-}
-
 # If $PROVER == jolt or $PROGRAM" = raiko, append precompiles to Cargo.toml
 if [ "$PROVER" = "jolt" ] || [ "$PROGRAM" = "raiko" ]; then
     cp Cargo.toml Cargo.toml.bak
@@ -86,9 +62,8 @@ echo "Building program"
   if [ "$PROVER" == "risc0" ] || [ "$PROVER" == "bento" ]; then
       echo "Building Risc0"
       # Use the risc0 toolchain.
-      ATOMIC_PARAM=$(check_rust_version "risc0")
       CC_riscv32im_risc0_zkvm_elf=~/.risc0/cpp/bin/riscv32-unknown-elf-gcc \
-        RUSTFLAGS="-C passes=$ATOMIC_PARAM \
+        RUSTFLAGS="-C passes=lower-atomic \
                    -C link-arg=-Ttext=0x00200800 \
                    -C link-arg=--fatal-warnings \
                    -C panic=abort \
@@ -102,8 +77,9 @@ echo "Building program"
   elif [ "$PROVER" == "sp1" ]; then
       # The reason we don't just use `cargo prove build` from the SP1 CLI is we need to pass a --features ...
       # flag to select between sp1 and risc0.
-      ATOMIC_PARAM=$(check_rust_version "succinct")
-      RUSTFLAGS="-C passes=$ATOMIC_PARAM -C link-arg=-Ttext=0x00200800 -C panic=abort" \
+      RUSTFLAGS="-C passes=lower-atomic \
+                 -C link-arg=-Ttext=0x00200800 \
+                 -C panic=abort" \
           RUSTUP_TOOLCHAIN=succinct \
           CARGO_BUILD_TARGET=riscv32im-succinct-zkvm-elf \
           cargo build --release --ignore-rust-version --features $PROVER
