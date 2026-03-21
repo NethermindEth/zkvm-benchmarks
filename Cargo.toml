@@ -17,9 +17,9 @@ eyre = "0.6.12"
 rsp-client-executor = { git = "https://github.com/succinctlabs/rsp/", rev = "249b34e" }
 rsp-host-executor = { git = "https://github.com/succinctlabs/rsp/", rev = "249b34e" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
-tokio = { version = "1.43.0", features = ["rt", "rt-multi-thread", "macros"] }
+tokio = { version = "1.43.1", features = ["rt", "rt-multi-thread", "macros"] }
 tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 url = "2.5.4"
 
 [profile.dev]
