@@ -10,7 +10,7 @@ valida-rs = { git = "https://github.com/lita-xyz/valida-rs.git", branch ="main"}
 serde = { version = "1.0.204", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 tendermint = { version = "0.34.0", default-features = false }
-tendermint-light-client-verifier = { version = "0.34.0", default-features = false, features = [
+tendermint-light-client-verifier = { version = "0.40.4", default-features = false, features = [
     "rust-crypto",
 ] }
 
